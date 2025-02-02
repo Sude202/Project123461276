@@ -5,8 +5,6 @@ import time
 import os
 import sys
 
-from sympy.physics.units import seconds
-
 storage_time = []
 storage_points = []
 
