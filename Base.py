@@ -26,8 +26,6 @@ boost = pygame.sprite.Group()
 SCORE = 0
 IS_PROTECTED = 0
 
-
-
 def load_image(name):
     fullname = os.path.join(name)
     image = pygame.image.load(fullname)
@@ -60,7 +58,6 @@ class Main(pygame.sprite.Sprite):
 
 
 class Enemy(pygame.sprite.Sprite):
-
     def __init__(self, *group):
         super().__init__(*group)
         self.image = pygame.Surface(SIZE_ENEMY)
@@ -247,6 +244,7 @@ class Restart(pygame.sprite.Sprite):
         global S
         if args and self.rect.collidepoint(args[0].pos):
             S = 1
+
 
 class Exit(pygame.sprite.Sprite):
     image = load_image("exit.png")
