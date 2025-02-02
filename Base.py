@@ -24,6 +24,7 @@ boost = pygame.sprite.Group()
 SCORE = 0
 IS_PROTECTED = 0
 
+
 def load_image(name):
     fullname = os.path.join(name)
     image = pygame.image.load(fullname)
@@ -383,6 +384,7 @@ running_all = True
 if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode(WIND_S)
+    pygame.display.set_caption("Agility")
     start_screen()
     while running_all:
         main()
