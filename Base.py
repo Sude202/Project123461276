@@ -5,8 +5,6 @@ import time
 import os
 import sys
 
-from sympy.physics.units import seconds
-
 storage_time = []
 storage_points = []
 
@@ -17,6 +15,7 @@ BOOST_RADIUS = round(15 * math.sqrt(2))
 S_EXP = 5, 5
 WIND_S = WIDTH_S, HEIGHT_S  = 800, 600
 FPS = 120
+Difficulty = 1
 
 all_sprites = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
@@ -25,7 +24,6 @@ exp = pygame.sprite.Group()
 boost = pygame.sprite.Group()
 SCORE = 0
 IS_PROTECTED = 0
-
 
 
 def load_image(name):
@@ -60,7 +58,6 @@ class Main(pygame.sprite.Sprite):
 
 
 class Enemy(pygame.sprite.Sprite):
-
     def __init__(self, *group):
         super().__init__(*group)
         self.image = pygame.Surface(SIZE_ENEMY)
@@ -248,6 +245,7 @@ class Restart(pygame.sprite.Sprite):
         if args and self.rect.collidepoint(args[0].pos):
             S = 1
 
+
 class Exit(pygame.sprite.Sprite):
     image = load_image("exit.png")
 
@@ -265,11 +263,29 @@ class Exit(pygame.sprite.Sprite):
             S = -1
 
 
+class Difficult:
+    def __init__(self, x, y, size):
+        self.font = pygame.font.SysFont(None, 36)
+        self.rect = pygame.Rect((x, y), size)
+        self.difficulties = ['Easy', 'Medium', 'Hard']
+        self.x, self.y = x, y
+
+    def check(self, *event):
+        global Difficulty
+        if event and self.rect.collidepoint(event[0].pos):
+            Difficulty = Difficulty % 3 + 1
+
+    def render(self, screen):
+        screen.blit(self.font.render(self.difficulties[Difficulty % 3 - 1], True,
+                                     (0, 0, 0)), (self.x, self.y))
+
+
 S = 0
 def start_screen():
     start = pygame.sprite.Group()
     exit = pygame.sprite.Group()
     screen.fill((255, 255, 255))
+    difficult = Difficult(240, 285, (100, 40))
     Start(start)
     Exit(WIDTH_S - 290, 275, exit)
     running = True
@@ -280,12 +296,15 @@ def start_screen():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 start.update(event)
                 exit.update(event)
+                difficult.check(event)
                 if S == 1:
                     return
                 if S == -1:
                     running = False
+        screen.fill((255, 255, 255))
         start.draw(screen)
         exit.draw(screen)
+        difficult.render(screen)
         pygame.display.flip()
     close()
 
@@ -312,9 +331,9 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        if not WAIT % 6:
+        if not WAIT % (6 / Difficulty):
             Enemy(all_sprites, enemies)
-        if not WAIT % 40 and WAIT != 0 and IS_PROTECTED != 1:
+        if not WAIT % (40 * Difficulty) and WAIT != 0 and IS_PROTECTED != 1:
             Boost(all_sprites, boost)
         if IS_PROTECTED:
             for i in boost:
@@ -326,6 +345,8 @@ def main():
         screen.fill(pygame.Color('#867491'))
         all_sprites.draw(screen)
         WAIT += 1
+        if IS_PROTECTED:
+            pygame.draw.circle(screen, pygame.Color("#0084ff"), pygame.mouse.get_pos(), BOOST_RADIUS, 5)
 
         enemies.update()
         boost.update()
@@ -353,6 +374,7 @@ def lose():
     storage_points.append(SCORE)
     FONT = pygame.font.SysFont(None, 52)
     screen.fill((255, 255, 255))
+    difficult = Difficult(520, 285, (100, 40))
     restart = pygame.sprite.Group()
     exit = pygame.sprite.Group()
     Restart(restart)
@@ -365,10 +387,12 @@ def lose():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 restart.update(event)
                 exit.update(event)
+                difficult.check(event)
                 if S == 1:
                     return True
                 if S == -1:
                     running = False
+        screen.fill((255, 255, 255))
         restart.draw(screen)
         exit.draw(screen)
         screen.blit(FONT.render(f'SCORE: {str(SCORE)}', True,
@@ -379,6 +403,7 @@ def lose():
                                 True, (0, 0, 0)), (300, 400))
         screen.blit(FONT.render(f'MAX TIME: {max(storage_time)}s',
                                 True, (0, 0, 0)), (300, 450))
+        difficult.render(screen)
         pygame.display.flip()
     return False
 
@@ -387,6 +412,7 @@ running_all = True
 if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode(WIND_S)
+    pygame.display.set_caption("Agility")
     start_screen()
     while running_all:
         main()
